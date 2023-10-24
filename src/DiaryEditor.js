@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { DiaryDispatchContext } from "./App";
 
-const DiaryEditor = ({ onCreate }) => {
-  useEffect(() => {
-    console.log("에디터 렌더링");
-  });
+const DiaryEditor = () => {
+  const { onCreate } = useContext(DiaryDispatchContext); // 객체로 보낸 케이스이기에 비구조화 할당으로 받기
 
   // DOM 조작
   const authorInput = useRef();

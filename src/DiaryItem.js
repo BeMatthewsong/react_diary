@@ -1,17 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
+import { DiaryDispatchContext } from "./App";
 
-const DiaryItem = ({
-  author,
-  content,
-  emotion,
-  created_date,
-  id,
-  onRemove,
-  onEdit,
-}) => {
-  useEffect(() => {
-    console.log(`${id}번째 아이템 렌더`);
-  });
+const DiaryItem = ({ author, content, emotion, created_date, id }) => {
+  const { onRemove, onEdit } = useContext(DiaryDispatchContext);
 
   const [isEdit, setIsEdit] = useState(false); // 수정이 가능한 상태인지 판별
   const [localContent, setLocalContent] = useState(content);

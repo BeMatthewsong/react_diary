@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+} from "react";
 import "./App.css";
 import DiaryEditor from "./DiaryEditor";
 import DiaryList from "./DiaryList";
@@ -30,10 +36,14 @@ const reducer = (state, action) => {
   }
 };
 
+// Context - data만 전달
+export const DiaryStateContext = React.createContext(); // export default는 파일당 1개만 가능
+// 중첩 Context - 리렌더링 방지하기 위해서 (onRemove, onEdit 넘겨주기 위해)
+export const DiaryDispatchContext = React.createContext();
+
 function App() {
   const BASE_URL = "https://jsonplaceholder.typicode.com/comments";
-  // const [data, setData] = useState([]);
-  const [data, dispatch] = useReducer(reducer, []);
+  const [data, dispatch] = useReducer(reducer, []); // state도 가지고 있다.
 
   const dataId = useRef(0);
 
@@ -84,6 +94,11 @@ function App() {
     });
   }, []);
 
+  // 재생성되지 않게 메모제이션 (provider의 value에 전달하기 위해 묶음)
+  const memoizedDispatches = useMemo(() => {
+    return { onCreate, onRemove, onEdit };
+  }, []);
+
   const getDiaryAnalysis = useMemo(() => {
     const goodCount = data.filter((it) => it.emotion >= 3).length;
     const badCount = data.length - goodCount;
@@ -94,14 +109,18 @@ function App() {
   const { goodCount, badCount, goodRatio } = getDiaryAnalysis; // useMemo는 값이므로 함수가 아니다. 그래서 호출하면 안 된다.
 
   return (
-    <div className="App">
-      <DiaryEditor onCreate={onCreate} />
-      <div>전체 일기 : {data.length}</div>
-      <div>기분 좋은 일기 개수 : {goodCount}</div>
-      <div>기분 나쁜 일기 개수 : {badCount}</div>
-      <div>기분 좋은 일기 비율 : {~~goodRatio}%</div>
-      <DiaryList onEdit={onEdit} onRemove={onRemove} diaryList={data} />
-    </div>
+    <DiaryStateContext.Provider value={data}>
+      <DiaryDispatchContext.Provider value={memoizedDispatches}>
+        <div className="App">
+          <DiaryEditor onCreate={onCreate} />
+          <div>전체 일기 : {data.length}</div>
+          <div>기분 좋은 일기 개수 : {goodCount}</div>
+          <div>기분 나쁜 일기 개수 : {badCount}</div>
+          <div>기분 좋은 일기 비율 : {~~goodRatio}%</div>
+          <DiaryList onEdit={onEdit} onRemove={onRemove} />
+        </div>
+      </DiaryDispatchContext.Provider>
+    </DiaryStateContext.Provider>
   );
 }
 
