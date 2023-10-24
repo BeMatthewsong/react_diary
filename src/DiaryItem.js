@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const DiaryItem = ({
   author,
@@ -9,10 +9,13 @@ const DiaryItem = ({
   onRemove,
   onEdit,
 }) => {
-  const localContentInput = useRef();
+  useEffect(() => {
+    console.log(`${id}번째 아이템 렌더`);
+  });
 
   const [isEdit, setIsEdit] = useState(false); // 수정이 가능한 상태인지 판별
   const [localContent, setLocalContent] = useState(content);
+  const localContentInput = useRef();
 
   const toggleIsEdit = () => setIsEdit(!isEdit);
 
@@ -77,4 +80,7 @@ const DiaryItem = ({
   );
 };
 
-export default DiaryItem;
+export default React.memo(DiaryItem);
+// React.memo로 props가 바뀌지 않는 이상 리렌더링되지 않는다
+// 하지만 props로 받는 onRemove, onEdit은 부모 컴포넌트에서 리렌더링되어 props까지 영향을 받는다.
+// 그래서 useCallback으로 props에 있는 것을 손봐야 한다.
