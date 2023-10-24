@@ -11,7 +11,7 @@ const DiaryList = ({ diaryList, onRemove, onEdit }) => {
           <DiaryItem
             key={data.id}
             onEdit={onEdit}
-            onDelete={onRemove}
+            onRemove={onRemove}
             {...data}
           />
         ))}

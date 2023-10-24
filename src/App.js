@@ -13,7 +13,7 @@ function App() {
     const res = await fetch(BASE_URL);
     const result = await res.json();
 
-    const initData = result.slice(0, 20).map((it) => {
+    const initData = result.slice(0, 10).map((it) => {
       return {
         author: it.email,
         content: it.body,
@@ -22,6 +22,8 @@ function App() {
         id: dataId.current++, // 요소 하나씩 렌더링될 때마다 id값을 하나씩 올리기
       };
     });
+
+    setData(initData);
   };
 
   // Mount 되자마자 API에서 데이터 불러오기
