@@ -1,11 +1,39 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import "./App.css";
 import DiaryEditor from "./DiaryEditor";
 import DiaryList from "./DiaryList";
 
+// 상태 변화 처리 함수
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "INIT": {
+      return action.data;
+    }
+    case "CREATE": {
+      const created_date = new Date().getTime();
+      const newItem = {
+        ...action.data,
+        created_date,
+      };
+      return [newItem, ...state]; // state는 원래값을 뜻한다.
+    }
+    case "REMOVE": {
+      return state.filter((it) => it.id !== action.targetId);
+    }
+    case "EDIT": {
+      return state.map((it) =>
+        it.id === action.targetId ? { ...it, content: action.newContent } : it
+      );
+    }
+    default:
+      return state;
+  }
+};
+
 function App() {
   const BASE_URL = "https://jsonplaceholder.typicode.com/comments";
-  const [data, setData] = useState([]);
+  // const [data, setData] = useState([]);
+  const [data, dispatch] = useReducer(reducer, []);
 
   const dataId = useRef(0);
 
@@ -23,7 +51,7 @@ function App() {
       };
     });
 
-    setData(initData);
+    dispatch({ type: "INIT", data: initData });
   };
 
   // Mount 되자마자 API에서 데이터 불러오기
@@ -34,29 +62,26 @@ function App() {
   // useCallback으로 의존성배열이 바뀔 때마다 메모제이션된 콜백함수를 실행해서 반환
   // onCreate가 바뀌면 자식 컴포넌트도 리렌더링 되어서 불필요한 리렌더링 발생 >> 해결방안: useCallback 필요
   const onCreate = useCallback((author, content, emotion) => {
-    const created_date = new Date().getTime();
-    const newItem = {
-      author,
-      content,
-      emotion,
-      created_date,
-      id: dataId.current,
-    };
+    dispatch({
+      type: "CREATE",
+      data: { author, content, emotion, id: dataId.current },
+    });
     dataId.current += 1;
-    setData((data) => [newItem, ...data]); // 새로운 게시물은 맨 위로 그리고 함수형 업데이트를 해야지 이전 것까지 다 불러올 수 있다.
   }, []);
 
   const onRemove = useCallback((targetId) => {
-    setData((data) => data.filter((it) => it.id !== targetId)); // 최신 state 사용하기 위해서 함수형 업데이트
+    dispatch({
+      type: "REMOVE",
+      targetId,
+    });
   }, []);
 
   const onEdit = useCallback((targetId, newContent) => {
-    setData((data) =>
-      data.map(
-        (item) =>
-          item.id === targetId ? { ...item, content: newContent } : item // 참일 때 게시물의 정보를 남긴 채 컨텐츠 부분만 newContent로 바꾸겠다.
-      )
-    );
+    dispatch({
+      type: "EDIT",
+      targetId,
+      newContent,
+    });
   }, []);
 
   const getDiaryAnalysis = useMemo(() => {
